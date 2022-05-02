@@ -18,6 +18,7 @@ parser = argparse.ArgumentParser(description='Sends a trailing stop order for gi
 parser.add_argument('-s', '--symbol', type= str, help='e.g., btc', default="btc")
 parser.add_argument('-tf', '--timeframe', type= str, help='one of: 15m, 1h, 4h, 1d', default="4h")
 parser.add_argument('-tp', '--take_profit', type= float, help='take profit, in percentage (should be above 0.1% to cover trading fees)', default=5.0)
+parser.add_argument('-ap', '--activation_price', type= float, help='directly uses the given activation price to set the exit point', default=0.0)
 parser.add_argument('-sl', '--stop_loss', type= float, help='not implemented yet; ignore', default=0.0)
 parser.add_argument('-dwl', '--data_window_length', type= int, help='how many candles to query from binance`s API, up to 500', default=50)
 parser.add_argument('-rwl', '--rolling_window_length', type=int, help='lenght of the rolling window to compute means and standard deviations', default=4)
@@ -34,6 +35,7 @@ args = parser.parse_args()
 PAIR = (args.symbol + "USDT").upper()
 TIMEFRAME = args.timeframe
 TAKE_PROFIT = args.take_profit
+ACTIVATION_PRICE = args.activation_price
 DATA_WINDOW_LENGTH = args.data_window_length
 ROLLING_WINDOW_LENGTH = args.rolling_window_length
 CALLBACKRATE_FACTOR = args.callback_rate_factor
@@ -116,8 +118,10 @@ if __name__ == "__main__":
     
     entry_price = open_positions[PAIR]["entry_price"];
     leverage = open_positions[PAIR]["leverage"];
-    
-    actv_price = entry_price*(1+TAKE_PROFIT/(100*leverage))
+    if ACTIVATION_PRICE != 0.0:
+        actv_price = ACTIVATION_PRICE
+    else:
+        actv_price = entry_price*(1+TAKE_PROFIT/(100*leverage))
     print(f"actv_price: {actv_price}")
     quantity = open_positions[PAIR]["pos_amt"]
     print(f"quantity: {quantity}")
