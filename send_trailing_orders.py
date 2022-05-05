@@ -123,7 +123,7 @@ if __name__ == "__main__":
     else:
         actv_price = entry_price*(1+TAKE_PROFIT/(100*leverage))
     print(f"actv_price: {actv_price}")
-    quantity = open_positions[PAIR]["pos_amt"]
+    quantity = abs(open_positions[PAIR]["pos_amt"])
     print(f"quantity: {quantity}")
 
     if SEND_ORDERS:
