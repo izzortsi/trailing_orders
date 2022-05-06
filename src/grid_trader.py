@@ -76,6 +76,7 @@ def apply_symbol_filters(filters, base_price, qty=1.2):
     min_qty = float(filters["minQty"])
     ticksize = filters["tickSize"]
     step_size = get_ticksize_int(ticksize)
+    print(ticksize, step_size)
     # print("price_precision", price_precision, "qty_precision", qty_precision, "min_qty", min_qty, "step_size", step_size)
     minNotional = 7
     min_qty = max(minNotional/base_price, min_qty)
@@ -201,7 +202,7 @@ def send_order_grid(client, symbol, inf_grid, sup_grid, tp, qty=1.1, side=SIDE, 
     entry_order_size = order_size
     formatted_order_size = qty_formatter(entry_order_size, qty_precision)
 
-    formated_entry_prices = [price_formatter(price, price_precision) for price in grid_entries]
+    formated_entry_prices = [price_formatter(price, step_size) for price in grid_entries]
  
     batch_order_params = [
         {
@@ -260,7 +261,9 @@ if __name__ == "__main__":
     grid_entries, price_precision, qty_precision, min_qty, order_size, step_size = send_order_grid(futures_client, PAIR, inf_grid, sup_grid, TAKE_PROFIT, qty=1.1, side=SIDE, sl=None, protect=False, is_positioned=False)
     print(grid_entries)
     avg_entry = sum(grid_entries)/len(grid_entries)
+    print("pair, open positions keys:", PAIR, list(open_positions.keys()))
     if PAIR in open_positions.keys():
+        print("AQUI")
         entry_price = open_positions[PAIR]["entry_price"];
         print("upnl", open_positions[PAIR]["upnl"])
         leverage = open_positions[PAIR]["leverage"];
@@ -276,7 +279,7 @@ if __name__ == "__main__":
     else:
         actv_price = compute_exit_tp(entry_price, TAKE_PROFIT, POSITION_DIRECTION)
 
-    formatted_actv_price = price_formatter(actv_price, price_precision)
+    formatted_actv_price = price_formatter(actv_price, step_size)
     print(f"actv_price: {formatted_actv_price}")
 
     formatted_quantity = qty_formatter(quantity, qty_precision)    
@@ -292,3 +295,5 @@ if __name__ == "__main__":
                     error.status_code, error.error_code, error.error_message
                 )
             )
+
+#%%
