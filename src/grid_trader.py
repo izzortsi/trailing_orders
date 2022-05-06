@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description='Sends a trailing stop order for gi
 
 parser.add_argument('-s', '--symbol', type= str, help='e.g., btc', default="btc")
 parser.add_argument('-tf', '--timeframe', type= str, help='one of: 15m, 1h, 4h, 1d', default="4h")
-parser.add_argument('-tp', '--take_profit', type= float, help='take profit, in percentage (should be above 0.1% to cover trading fees)', default=5.0)
+parser.add_argument('-tp', '--take_profit', type= float, help='take profit, in percentage, without accounting for leverage (should be above 0.1% to cover trading fees)', default=0.5)
 parser.add_argument('-ap', '--activation_price', type= float, help='directly uses the given activation price to set the exit point', default=0.0)
 parser.add_argument('-sl', '--stop_loss', type= float, help='not implemented yet; ignore', default=0.0)
 parser.add_argument('-dwl', '--data_window_length', type= int, help='how many candles to query from binance`s API, up to 500', default=50)
@@ -46,6 +46,7 @@ CALLBACKRATE_FACTOR = args.callback_rate_factor
 POSITION_DIRECTION = args.position_direction
 PLOT_STUFF = args.plot_stuff
 SEND_ORDERS = args.send_orders
+LEVERAGE = 10
 
 if POSITION_DIRECTION == "LONG":
     SIDE = "SELL" 
@@ -55,6 +56,49 @@ else:
     raise Exception(f"POSITION_DIRECTION must be either 'LONG' or 'SHORT', and is {POSITION_DIRECTION}")
 
 config_logging(logging, logging.WARNING)
+
+
+qty_formatter = lambda ordersize, qty_precision: f"{float(ordersize):.{qty_precision}f}"
+price_formatter = lambda price, price_precision: f"{float(price):.{price_precision}f}"
+
+def get_filters():
+    with open("symbols_filters.json") as f:
+        data = json.load(f)
+    return data
+
+def get_ticksize_int(ticksize: str):
+    return len(ticksize.split(".")[1].split("1")[0])+1
+
+
+def apply_symbol_filters(filters, base_price, qty=1.2):
+    price_precision = int(filters["pricePrecision"])    
+    qty_precision = int(filters["quantityPrecision"])
+    min_qty = float(filters["minQty"])
+    ticksize = filters["tickSize"]
+    step_size = get_ticksize_int(ticksize)
+    # print("price_precision", price_precision, "qty_precision", qty_precision, "min_qty", min_qty, "step_size", step_size)
+    minNotional = 7
+    min_qty = max(minNotional/base_price, min_qty)
+    # print("minqty:", min_qty)
+    order_size = qty * min_qty
+    # print("ordersize", order_size)
+
+    return price_precision, qty_precision, min_qty, order_size, step_size
+
+def compute_exit_tp(entry_price, target_profit, side, entry_fee=0.04, exit_fee=0.04):
+    if side == "LONG":
+        exit_price = (
+            entry_price
+            * (1 + target_profit / 100 + entry_fee / 100)
+            / (1 - exit_fee / 100)
+        )
+    elif side == "SHORT":
+        exit_price = (
+            entry_price
+            * (1 - target_profit / 100 - entry_fee / 100)
+            / (1 + exit_fee / 100)
+        )
+    return exit_price    
 
 def process_klines(klines):
 
@@ -75,7 +119,7 @@ def process_klines(klines):
     df.drop(['ignore'], axis=1, inplace=True)
     return df
 
-def compute_indicators(klines, coefs=np.array([0.618, 1.0, 1.618]), w1=12, w2=26, w3=8, w_atr=ROLLING_WINDOW_LENGTH, step=0.0):
+def compute_indicators(klines, coefs=np.array([0.618, 1.0, 1.618]), w1=12, w2=26, w3=8, w_atr=5, step=0.0):
     # compute macd
     macd = pd.Series(
         klines["close"].ewm(span=w1, min_periods=w1).mean()
@@ -93,15 +137,18 @@ def compute_indicators(klines, coefs=np.array([0.618, 1.0, 1.618]), w1=12, w2=26
     hmean = klines.high.ewm(span=w_atr).mean()
     lmean = klines.low.ewm(span=w_atr).mean()
     global_volatility = (((hmean/lmean).mean()-1)*100)
-    
+    print("global volatility:", global_volatility)    
     # closes_mean = klines["close"].ewm(span=w_atr, min_periods=w_atr).mean()
     # closes_std = klines["close"].ewm(span=w_atr, min_periods=w_atr).std()
     
-    closes_mean = klines.close.ewm(halflife=pd.Timedelta(TIMEFRAME)/4, ignore_na=True, min_periods=ROLLING_WINDOW_LENGTH, times=klines.open_time).mean()
-    closes_std = klines.close.ewm(halflife=pd.Timedelta(TIMEFRAME)/4, ignore_na=True, min_periods=ROLLING_WINDOW_LENGTH, times=klines.open_time).std()
+    # closes_mean = klines.close.ewm(halflife=pd.Timedelta(TIMEFRAME)/4, ignore_na=True, min_periods=ROLLING_WINDOW_LENGTH, times=klines.open_time).mean()
+    # closes_std = klines.close.ewm(halflife=pd.Timedelta(TIMEFRAME)/4, ignore_na=True, min_periods=ROLLING_WINDOW_LENGTH, times=klines.open_time).std()
+    closes_mean = klines.close.ewm(span=w_atr, min_periods=w_atr).mean()
+    closes_std = klines.close.ewm(span=w_atr, min_periods=w_atr).std()
 
     local_volatility = (closes_std/closes_mean).mean()*100
-    
+    print("local volatility:", local_volatility)
+
     grid_coefs = np.concatenate((np.sort(inf_grid_coefs), sup_grid_coefs))
     atr_grid = [closes_mean + atr * coef for coef in grid_coefs]
 
@@ -109,6 +156,9 @@ def compute_indicators(klines, coefs=np.array([0.618, 1.0, 1.618]), w1=12, w2=26
 
     inf_grid = [closes_mean - atr * coef for coef in grid_coefs]
     sup_grid = [closes_mean + atr * coef for coef in grid_coefs]
+
+
+
 
     return macd_hist, atr, inf_grid, sup_grid, closes_mean, closes_std, atr_grid, local_volatility, global_volatility
 
@@ -127,66 +177,56 @@ def get_open_positions(positions):
             print(f"{open_positions[position['symbol']]}");
     return open_positions
 
-def compute_exit_tp(entry_price, target_profit, side, entry_fee=0.04, exit_fee=0.04):
-    if side == "LONG":
-        exit_price = (
-            entry_price
-            * (1 + target_profit / 100 + entry_fee / 100)
-            / (1 - exit_fee / 100)
-        )
-    elif side == "SHORT":
-        exit_price = (
-            entry_price
-            * (1 - target_profit / 100 - entry_fee / 100)
-            / (1 + exit_fee / 100)
-        )
-    return exit_price
-
-
-def send_order_grid(client, symbol, data, inf_grid, sup_grid, tp, side, coefs, qty=1.1, sl=None, protect=False, is_positioned=False):
-    # print(inf_grid)
-    # grid_orders = []
-    bands_through = data["signals"]
-    print(bands_through)
-    bands_to_enter = []
-    enter_from_band = None
-    for i, passed_band in enumerate(bands_through):
-        if passed_band == 0:
-            bands_to_enter.append(i)
-    if len(bands_to_enter) > 0:
-        enter_from_band = bands_to_enter[0]
-
-    print(enter_from_band)
-    print(bands_to_enter)
+def send_order_grid(client, symbol, inf_grid, sup_grid, tp, qty=1.1, side=SIDE, sl=None, protect=False, is_positioned=False):
+    
+    
     grid_orders = dict(entry = None, tp = None, sl = None, grid = [])
-    if enter_from_band is not None:
-        inf_grid[enter_from_band:]
-        grid_entries = [band.values[-1] for band in inf_grid[enter_from_band:]] if side == 1 else [band.values[-1] for band in sup_grid[enter_from_band:]]
-    else:
-        grid_entries = []        
-    print(grid_entries)
-    if side == -1:
-        side = "SELL"
+    
+    
+    if side == "SELL":
         counterside = "BUY"
-    elif side == 1:
-        side = "BUY"
-        counterside = "SELL"
-    print("grid entries:", grid_entries)
+        entry_bands = inf_grid
+    elif side == "BUY":
+        counterside = "SELL" 
+        entry_bands = sup_grid
+    
+    grid_entries = [band.values[-1] for band in entry_bands]
+    print(grid_entries)
+
     filters = get_filters()
     symbolFilters = filters[symbol]
-    # inf_grid
-    error_code = None
-    # print(inf_grid[:, -1])
     base_price = inf_grid[0].values[-1]
     price_precision, qty_precision, min_qty, order_size, step_size = apply_symbol_filters(symbolFilters, base_price, qty=qty)
 
-
-    qty_formatter = lambda ordersize, qty_precision: f"{float(ordersize):.{qty_precision}f}"
-    # price_formatter = lambda price, price_precision: f"{float(price):.{price_precision}f}"
-    price_formatter = lambda price, price_precision: f"{float(price):.{price_precision}f}"
-    entry_order_size = order_size*2
+    entry_order_size = order_size
     formatted_order_size = qty_formatter(entry_order_size, qty_precision)
 
+    formated_entry_prices = [price_formatter(price, price_precision) for price in grid_entries]
+ 
+    batch_order_params = [
+        {
+            "symbol":PAIR,
+            "side": counterside,
+            "type": "LIMIT",
+            "quantity": formatted_order_size,
+            "timeInForce": "GTC",
+            "price": price
+        }
+        
+        for price in formated_entry_prices
+    ]
+    print(batch_order_params)
+
+    try:
+        response = client.new_batch_order(batch_order_params)
+        logging.info(response)
+    except ClientError as error:
+        logging.error(
+            "Found error. status: {}, error code: {}, error message: {}".format(
+                error.status_code, error.error_code, error.error_message
+            )
+        )
+    return grid_entries, price_precision, qty_precision, min_qty, order_size, step_size
 if __name__ == "__main__":
 
     akey = os.environ.get("API_KEY")
@@ -217,22 +257,34 @@ if __name__ == "__main__":
         fig = pf.plot_single_atr_grid(df, atr, atr_grid, closes_mean, macd_hist)
         fig.show()
 
-    print("upnl", open_positions[PAIR]["upnl"])
-    
-    entry_price = open_positions[PAIR]["entry_price"];
-    leverage = open_positions[PAIR]["leverage"];
+    grid_entries, price_precision, qty_precision, min_qty, order_size, step_size = send_order_grid(futures_client, PAIR, inf_grid, sup_grid, TAKE_PROFIT, qty=1.1, side=SIDE, sl=None, protect=False, is_positioned=False)
+    print(grid_entries)
+    avg_entry = sum(grid_entries)/len(grid_entries)
+    if PAIR in open_positions.keys():
+        entry_price = open_positions[PAIR]["entry_price"];
+        print("upnl", open_positions[PAIR]["upnl"])
+        leverage = open_positions[PAIR]["leverage"];
+        quantity = len(grid_entries)*order_size + abs(open_positions[PAIR]["pos_amt"])
+    else:
+        entry_price = grid_entries[0]
+        quantity = len(grid_entries)*order_size
+    # entry_price = avg_entry
+    # print("avg_entry", entry_price)
     
     if ACTIVATION_PRICE != 0.0:
         actv_price = ACTIVATION_PRICE
     else:
-        actv_price = entry_price*(1+TAKE_PROFIT/(100*leverage))
-    print(f"actv_price: {actv_price}")
-    quantity = abs(open_positions[PAIR]["pos_amt"])
-    print(f"quantity: {quantity}")
+        actv_price = compute_exit_tp(entry_price, TAKE_PROFIT, POSITION_DIRECTION)
+
+    formatted_actv_price = price_formatter(actv_price, price_precision)
+    print(f"actv_price: {formatted_actv_price}")
+
+    formatted_quantity = qty_formatter(quantity, qty_precision)    
+    print(f"quantity: {qty_formatter(quantity, qty_precision)}")
 
     if SEND_ORDERS:
         try:
-            response = response = futures_client.new_order(symbol=PAIR, side = SIDE, type= "TRAILING_STOP_MARKET", quantity= quantity, reduceOnly = True, timeInForce="GTC", activationPrice= actv_price, callbackRate=callback_rate)
+            response = response = futures_client.new_order(symbol=PAIR, side = SIDE, type= "TRAILING_STOP_MARKET", quantity= formatted_quantity, reduceOnly = True, timeInForce="GTC", activationPrice= formatted_actv_price, callbackRate=callback_rate)
             # logging.info(response)
         except ClientError as error:
             logging.error(
