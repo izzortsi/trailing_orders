@@ -142,9 +142,50 @@ def compute_exit_tp(entry_price, target_profit, side, entry_fee=0.04, exit_fee=0
         )
     return exit_price
 
-def send_grid_orders():
-    pass
 
+def send_order_grid(client, symbol, data, inf_grid, sup_grid, tp, side, coefs, qty=1.1, sl=None, protect=False, is_positioned=False):
+    # print(inf_grid)
+    # grid_orders = []
+    bands_through = data["signals"]
+    print(bands_through)
+    bands_to_enter = []
+    enter_from_band = None
+    for i, passed_band in enumerate(bands_through):
+        if passed_band == 0:
+            bands_to_enter.append(i)
+    if len(bands_to_enter) > 0:
+        enter_from_band = bands_to_enter[0]
+
+    print(enter_from_band)
+    print(bands_to_enter)
+    grid_orders = dict(entry = None, tp = None, sl = None, grid = [])
+    if enter_from_band is not None:
+        inf_grid[enter_from_band:]
+        grid_entries = [band.values[-1] for band in inf_grid[enter_from_band:]] if side == 1 else [band.values[-1] for band in sup_grid[enter_from_band:]]
+    else:
+        grid_entries = []        
+    print(grid_entries)
+    if side == -1:
+        side = "SELL"
+        counterside = "BUY"
+    elif side == 1:
+        side = "BUY"
+        counterside = "SELL"
+    print("grid entries:", grid_entries)
+    filters = get_filters()
+    symbolFilters = filters[symbol]
+    # inf_grid
+    error_code = None
+    # print(inf_grid[:, -1])
+    base_price = inf_grid[0].values[-1]
+    price_precision, qty_precision, min_qty, order_size, step_size = apply_symbol_filters(symbolFilters, base_price, qty=qty)
+
+
+    qty_formatter = lambda ordersize, qty_precision: f"{float(ordersize):.{qty_precision}f}"
+    # price_formatter = lambda price, price_precision: f"{float(price):.{price_precision}f}"
+    price_formatter = lambda price, price_precision: f"{float(price):.{price_precision}f}"
+    entry_order_size = order_size*2
+    formatted_order_size = qty_formatter(entry_order_size, qty_precision)
 
 if __name__ == "__main__":
 
