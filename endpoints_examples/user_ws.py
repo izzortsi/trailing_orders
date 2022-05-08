@@ -11,12 +11,22 @@ from binance.websocket.futures.websocket_client import FuturesWebsocketClient
 config_logging(logging, logging.DEBUG)
 
 def message_handler(message):
-    print(message)
+    try:
+        if "e" in message.keys():
+            print(message["e"])
+            if message["e"] == "ORDER_TRADE_UPDATE":
+                order_data = message["o"]
+                # print(message)
+                print(order_data["s"])
+                print(order_data["X"])
+                
+    except exception as e:
+        print(e)
+
 
 key = os.environ.get('API_KEY')
 sec = os.environ.get('API_SECRET')
 
-# %%
 
 client = Client(key)
 response = client.new_listen_key()
@@ -34,8 +44,8 @@ ws_client.user_data(
     callback=message_handler,
 )
 
-time.sleep(60)
+
 
 logging.debug("closing ws connection")
-ws_client.stop()
+# ws_client.stop()
 #%%
