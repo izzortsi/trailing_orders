@@ -16,7 +16,7 @@ class RingBuffer(FuturesWebsocketClient):
             self.data = []
         else:
             self.data = data
-
+        self.df = pd.DataFrame()
         self.size = size
 
         super().__init__()
@@ -40,7 +40,21 @@ class RingBuffer(FuturesWebsocketClient):
                         },
                     ])
                     ]
-
+                self.df = pd.concat([
+                        self.df, 
+                        pd.DataFrame([   
+                            {
+                            "s": message["s"],
+                            "date": pd.to_datetime(message["E"], unit="ms"),
+                            "o": pd.to_numeric(message["o"]),
+                            "h": pd.to_numeric(message["h"]),
+                            "l": pd.to_numeric(message["l"]),
+                            "c": pd.to_numeric(message["c"]),
+                            "v": pd.to_numeric(message["v"]),
+                            },
+                            ])], 
+                            ignore_index = True,
+                        )
 
             # item = message                  [message]["c"]  
             # self.data[item['symbol']] = item['price']
@@ -72,7 +86,7 @@ b.stop()
 pd.concat(b.data, ignore_index = True)
 # %%
 
-
+b.df
 # %%
 
 
