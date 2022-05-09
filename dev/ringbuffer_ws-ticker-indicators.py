@@ -8,6 +8,7 @@ from binance.websocket.futures.websocket_client import FuturesWebsocketClient as
 config_logging(logging, logging.DEBUG)
 from binance.websocket.futures.websocket_client import FuturesWebsocketClient
 import pandas as pd
+import pandas_ta as ta
 
 class RingBuffer(FuturesWebsocketClient):
     def __init__(self, size, data=None):
@@ -70,7 +71,7 @@ class RingBuffer(FuturesWebsocketClient):
         # finally:
         #     print(self.data)
 
-b = RingBuffer(10)
+b = RingBuffer(240)
 b.start()
 b.ticker(
     id=1,
@@ -78,10 +79,34 @@ b.ticker(
 )
 
 
-# %%
+class StreamProcesser:
+    def __init__(self, ringbuffer):
+        self.ringbuffer = ringbuffer
+        self.processed_data = {}
 
-btc_df = b.df["BTCUSDT"]
-len(b.df["BTCUSDT"])
+    def process(self):
+        for sym in self.ringbuffer.df.keys():
+            self.processed_data[sym] = self.ringbuffer.df[sym].copy()
+            self.processed_data[sym]["ema"] = self.processed_data[sym]["c"].ewm(span=80).mean()
+            self.processed_data[sym]["std"] = self.processed_data[sym]["c"].ewm(span=80).std()
+            self.processed_data[sym]["pstd"] = self.processed_data[sym]["std"]/self.processed_data[sym]["ema"]
+            self.processed_data[sym]["pstd_diff"] = \
+                (self.processed_data[sym]["c"] - self.processed_data[sym]["ema"])/self.processed_data[sym]["std"]
+
+
+sproc = StreamProcesser(ringbuffer=b)
+
+
+# sproc.process()
+# sproc.processed_data
+time.sleep(30)
+
+while True:
+    time.sleep(1)
+    sproc.process()
+    # print([sproc.processed_data[k].iloc[-1] for k in sproc.processed_data.keys()])
+    print(sproc.processed_data["BTCUSDT"].iloc[-1][["c", "ema", "std", "pstd"]])
+# %%
 
 b.stop()
 #%%

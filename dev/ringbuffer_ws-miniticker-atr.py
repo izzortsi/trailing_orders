@@ -26,20 +26,7 @@ class RingBuffer(FuturesWebsocketClient):
         try:
             # print(message)
             # print(type(message))
-            if (message["e"] == "24hrMiniTicker") and (len(self.data) < self.size):
-                self.data = self.data + \
-                    [pd.DataFrame([   
-                        {
-                        "s": message["s"],
-                        "date": pd.to_datetime(message["E"], unit="ms"),
-                        "o": pd.to_numeric(message["o"]),
-                        "h": pd.to_numeric(message["h"]),
-                        "l": pd.to_numeric(message["l"]),
-                        "c": pd.to_numeric(message["c"]),
-                        "v": pd.to_numeric(message["v"]),
-                        },
-                    ])
-                    ]
+            if (message["e"] == "24hrMiniTicker") and (len(self.df) < self.size):
                 self.df = pd.concat([
                         self.df, 
                         pd.DataFrame([   
@@ -55,22 +42,10 @@ class RingBuffer(FuturesWebsocketClient):
                             ])], 
                             ignore_index = True,
                         )
-            elif (message["e"] == "24hrMiniTicker") and (len(self.data) >= self.size):
-                self.data = self.data[1:] + \
-                    [pd.DataFrame([   
-                        {
-                        "s": message["s"],
-                        "date": pd.to_datetime(message["E"], unit="ms"),
-                        "o": pd.to_numeric(message["o"]),
-                        "h": pd.to_numeric(message["h"]),
-                        "l": pd.to_numeric(message["l"]),
-                        "c": pd.to_numeric(message["c"]),
-                        "v": pd.to_numeric(message["v"]),
-                        },
-                    ])
-                    ]
+            elif (message["e"] == "24hrMiniTicker") and (len(self.df) >= self.size):
+                self.df.drop(axis=0, index = 0, inplace=True), 
                 self.df = pd.concat([
-                        self.df.drop(axis=0, index = 0, inplace=True), 
+                        self.df, 
                         pd.DataFrame([   
                             {
                             "s": message["s"],
@@ -92,7 +67,7 @@ class RingBuffer(FuturesWebsocketClient):
         # finally:
         #     print(self.data)
 
-b = RingBuffer(52)
+b = RingBuffer(240)
 b.start()
 b.mini_ticker(
     id=1,
