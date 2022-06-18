@@ -62,30 +62,18 @@ class RingBuffer(FuturesWebsocketClient):
                             ignore_index = True,
                         )
                 atr_ = ta.atr(self.df.h, self.df.l, self.df.c, length=24)                        
-                # print(atr_)
+
                 closes_ema = ta.ema(self.df.c, length=24)
                 closes_ema.name = "ema"
-                # print(closes_ema)
+
                 sup_band = closes_ema + 0.84*atr_
                 sup_band.name = "sband"
-                # print(sup_band)
+
                 inf_band = closes_ema - 0.84*atr_
                 inf_band.name = "iband"
-                # indicators_row = pd.concat([inf_band, closes_ema, sup_band], axis=1)
-                # print(indicators_row)
-                # self.indicators_df = pd.concat([
-                #                                 self.indicators_df,
-                #                                 indicators_row
-                #                                 ],
-                #                                 ignore_index=True,
-                #                             )
+
                 self.indicators = pd.concat([inf_band, closes_ema, sup_band], axis=1)
-                # print(self.indicators)
-                # self.indicators_df = ta.atr(self.df.h, self.df.l, self.df.c, timeperiod=6)
-                # print(self.indicators_df.iloc[-1])
-                # print(self.df[["date", "c"]].iloc[0])
-                # print(self.df[["date", "c"]].iloc[-1])
-                # print(self.df.date.iloc[-1] - self.df.date.iloc[0])
+
 
         except Exception as e:
             print(e)
