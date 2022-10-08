@@ -6,10 +6,10 @@ import numpy as np
 import time
 import logging
 from binance.lib.utils import config_logging
-from binance.websocket.futures.websocket_client import FuturesWebsocketClient as Client
+
 
 config_logging(logging, logging.DEBUG)
-from binance.websocket.futures.websocket_client import FuturesWebsocketClient
+from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient as FuturesWebsocketClient
 import pandas as pd
 import pandas_ta as ta
 
@@ -63,7 +63,8 @@ class RingBuffer(FuturesWebsocketClient):
                         )
                 atr_ = ta.atr(self.df.h, self.df.l, self.df.c, length=24)                        
                 # print(atr_)
-                closes_ema = ta.ema(self.df.c, length=24)
+                closes_ema = ta.ema(self.df.c, length=24, label="ema")
+                # print(closes_ema)
                 closes_ema.name = "ema"
                 # print(closes_ema)
                 sup_band = closes_ema + 0.84*atr_
@@ -103,8 +104,18 @@ b.continuous_kline(
 #%%
 f, ax = plt.subplots(figsize=(12, 8))
 
+# %%
+print(b.df)
+print(b.indicators)
+# %%
+
 ax.plot(b.df.date, b.df.c, label="close")
+
+
+# %%
+
 ax.plot(b.df.date, b.indicators.ema)
+
 ax.plot(b.df.date, b.indicators.iband)
 ax.plot(b.df.date, b.indicators.sband)
 # %%
