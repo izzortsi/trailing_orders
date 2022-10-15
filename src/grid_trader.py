@@ -1,5 +1,5 @@
 #%%
-from binance.futures import Futures as Client
+from binance.um_futures import UMFutures as Client
 from binance.lib.utils import config_logging
 from binance.error import ClientError
 import pandas_ta as ta
