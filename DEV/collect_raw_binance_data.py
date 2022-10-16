@@ -63,7 +63,7 @@ def collect_data(PAIR, from_date, to_date, BLOCK, multiplier=7, timeframe ="1m")
     to_ts = round(datetime.timestamp(to_date)*1000)
 
     client = Client()
-    klines_gen = client.continuous_klines(pair=PAIR, contractType="perpetual", interval=timeframe)
+    klines_gen = client.continuous_klines(pair=PAIR, contractType="perpetual", interval=timeframe, startTime=from_ts, endTime=to_ts, limit=BLOCK)
     # get_historical_klines_generator(
     #                 PAIR, TIMEFRAME, from_ts, end_str=to_ts
     #                 )
