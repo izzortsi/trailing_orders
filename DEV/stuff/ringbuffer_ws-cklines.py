@@ -1,26 +1,20 @@
 
 # %%
-%matplotlib qt
-import matplotlib.pyplot as plt
-import numpy as np
+
 import time
 import logging
 from binance.lib.utils import config_logging
-import time
-
-from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient as FuturesWebsocketClient
-import pandas as pd
-import pandas_ta as ta
+from binance.websocket.futures.websocket_client import FuturesWebsocketClient as Client
 
 config_logging(logging, logging.DEBUG)
-
-# %%
+from binance.websocket.futures.websocket_client import FuturesWebsocketClient
+import pandas as pd
 
 class RingBuffer(FuturesWebsocketClient):
     def __init__(self, size):
         self.df = pd.DataFrame()
         self.size = size
-        self.indicators = pd.DataFrame()
+
         super().__init__()
         
 
@@ -63,57 +57,23 @@ class RingBuffer(FuturesWebsocketClient):
                             ])], 
                             ignore_index = True,
                         )
-                atr_ = ta.atr(self.df.h, self.df.l, self.df.c, length=24)                        
-
-                closes_ema = ta.ema(self.df.c, length=24)
-                closes_ema.name = "ema"
-
-                sup_band = closes_ema + 0.84*atr_
-                sup_band.name = "sband"
-
-                inf_band = closes_ema - 0.84*atr_
-                inf_band.name = "iband"
-
-                self.indicators = pd.concat([inf_band, closes_ema, sup_band], axis=1)
-                print(self.df.iloc[-1], "\n", self.indicators.iloc[-1])
+                # print(self.df[["date", "c"]].iloc[0])
+                # print(self.df[["date", "c"]].iloc[-1])
+                # print(self.df.date.iloc[-1] - self.df.date.iloc[0])
 
         except Exception as e:
             print(e)
 
-b = RingBuffer(64)
+b = RingBuffer(240)
 b.start()
 b.continuous_kline(
     pair="btcusdt",
     id=1,
     contractType="perpetual", 
-    interval='1m',
+    interval='4h',
     callback=b.message_handler,
 )
 
 # %%
-b.df
-# %%
 
-#%%
-f, ax = plt.subplots(figsize=(12, 8))
-
-ax.plot(b.df.date, b.df.c, label="close")
-ax.plot(b.df.date, b.indicators.ema)
-ax.plot(b.df.date, b.indicators.iband)
-ax.plot(b.df.date, b.indicators.sband)
-# %%
-ax.clear()
-# %%
-
-# ax.lines[0].set_data(b.df.date, b.df.c)
-# ax.lines[0].set_data(b.df.date, b.indicators.ema)
-# ax.lines[2].set_data(b.df.date, b.indicators.iband)
-# ax.lines[3].set_data(b.df.date, b.indicators.sband)
-# #%%
-
-# #%%
-# ax.lines[0].draw(ax.plot(b.df.date, b.df.c))
-# ax.lines[1].draw(ax.plot(b.df.date,b.indicators.ema))
-# ax.lines[2].draw(ax.plot(b.df.date,b.indicators.iband))
-# ax.lines[3].draw(ax.plot(b.df.date,b.indicators.sband))
-#%%
+b.stop()
