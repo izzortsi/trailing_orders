@@ -1,3 +1,6 @@
+#%%
+
+
 import logging
 from binance.um_futures import UMFutures as Client
 from binance.lib.utils import config_logging
@@ -12,13 +15,14 @@ from scipy import signal
 from datetime import datetime
 
 
-###
+#%%
+
 
 akey = os.environ.get("API_KEY")
 asec = os.environ.get("API_SECRET")
 futures_client = Client(key = akey, secret= asec)
 
-###
+#%%
 
 #DATA PARAMETERS
 
@@ -27,7 +31,7 @@ BLOCK = 512
 DUMP = '.csv'
 DATA_DIR = os.path.join(PREFIX, "datasets")
 
-###
+#%%
 
 TIMEFRAME = "15m"
 PAIR = "ETHUSDT"
@@ -36,6 +40,8 @@ PAIR = "ETHUSDT"
 FROM_DATE = "2022-10-14" 
 TO_DATE = "2022-10-17"
 NUM_DATA = 1000 #max 100k idk why
+
+#%%
 
 ###
 
@@ -113,25 +119,58 @@ class StaticDatabase:
         return df
 
     def make_features_and_labels(self):
+
+
         df = self.data
+        
+
+
+        D = 1
+        t = 1
+        win1 = signal.windows.hann(9)
+        win2 = signal.windows.hann(6)
+        
+        
+        ###
+
+        #FEATURES
         
         df["closes_ema"] = df.close.ewm(halflife=pd.Timedelta(TIMEFRAME)/4, ignore_na=True, min_periods=ROLLING_WINDOW_LENGTH, times=df.open_time).mean()
         df["closes_std"] = df.close.ewm(halflife=pd.Timedelta(TIMEFRAME)/4, ignore_na=True, min_periods=ROLLING_WINDOW_LENGTH, times=df.open_time).std()
         df["closes_z"] = (df.close - df.closes_ema) / df.closes_std
         df["closes_z"] = df.closes_z.ewm(halflife=pd.Timedelta(TIMEFRAME)/4, ignore_na=True, min_periods=ROLLING_WINDOW_LENGTH, times=df.open_time).mean()
         
+        ###
+
         features = self.data[
             ['open_time', 'open', 'high', 'low', 'close', 'volume',
              'quote_asset_volume', 'trades', 'taker_buy_volume',
               'taker_buy_quote_asset_volume', 'closes_ema', 'closes_std',
                'closes_z']
               ]
+
         self.features = features
+
+        ###
+
+        closes_1 = self.data.close.shift(-1)
+        closes_2 = self.data.close.shift(-2)
+        acc = ((self.features.close - closes_1) - (closes_1 - closes_2))/(D**2*t)
+        self.features['acc'] = acc #this is pretty much noise
+        self.features['filtered_acc'] = signal.convolve(self.features.acc, win2, mode='same') / sum(win2)
+        
+        ###
+
+        filtered_z = signal.convolve(self.features.closes_z, win1, mode='same') / sum(win1)
+        self.features["filtered_z"] = filtered_z
+
+        ###
+
 
 
         ###
 
-        #LABEL
+        #LABELS
         
         mean_std = df.closes_std.mean()
 
@@ -182,13 +221,18 @@ class StaticDatabase:
         # self.data_alchemy()    
 
 
-    def data_alchemy(self):
+    def data_alchemy(self, *args, **kwargs):
         
         #FEATURE ENGINEERING
         
         df = self.data
         feat = self.features
-    
+        lab = self.labels
+
+        self.data_alchemy(df, feat, lab)
+
+
+
     def plot_data(self):
 
         df = self.data
@@ -199,8 +243,8 @@ class StaticDatabase:
         ax1.plot(df.closes_ema + 1.618*df.closes_std, linewidth=0.75)
         ax1.plot(df.closes_ema - 1.618*df.closes_std, linewidth=0.75)
 
-        (fig2, ax2) = plt.subplots(figsize=(18,12))
-        
+        (fig2, ax2) = plt.subplots(figsize=(16,12))
+
         ax2.plot(df.close)
         peak_x = self.peak_regions
         peak_y = df.close.values[self.peak_regions]
@@ -211,10 +255,18 @@ class StaticDatabase:
         ax2.plot(valley_x, valley_y, marker='o', markersize=2.5, linestyle="None", color='red', label="Valleys")
         ax2.grid(which='both', alpha=0.8)
         ax2.grid(True, which="minor")
+
+        (fig3, axs) = plt.subplots(nrows=2, ncols=1, figsize=(16,12))
         
+        axs[0].plot(self.features.acc)
+        axs[0].plot(self.features.filtered_acc, linewidth=1.75)
+        
+        axs[1].plot(self.features.closes_z)
+        axs[1].plot(self.features.filtered_z, linewidth=1.75)
+
         self.dump_data()
         
-        return (fig1, ax1), (fig2, ax2)
+        return (fig1, ax1), (fig2, ax2), (fig3, axs)
 
 
     def dump_data(self, dir_name=None):
@@ -229,13 +281,13 @@ class StaticDatabase:
 
 ####
 
-#read data
-
-
-
 
 if __name__ == "__main__":
     sdb = StaticDatabase(futures_client, PAIR, TIMEFRAME, FROM_DATE, TO_DATE)
     sdb.get_historical_klines()
     sdb.make_features_and_labels()
-    (f1, a1), (f2, a2) = sdb.plot_data()
+    (f1, a1), (f2, a2), (f3, axs) = sdb.plot_data()
+
+
+
+#%%
