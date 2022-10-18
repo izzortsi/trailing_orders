@@ -65,3 +65,12 @@ lhocv, labels = to_lhocv(symbol, fromt, to, block, timespan, data_path)
 #%%
 len(lhocv[0])
 #%%
+#READ DATA
+data_path = os.path.join(NEW_DATA_DIR, f"{PAIR}_{TIMEFRAME}")
+print(data_path)       
+labels = pd.read_csv(data_path + "_labels.csv")
+labels.drop(['Unnamed: 0'], axis=1, inplace=True)
+features = pd.read_csv(data_path + "_features.csv")
+features.drop(['Unnamed: 0'], axis=1, inplace=True)
+print(labels)
+print(features)
