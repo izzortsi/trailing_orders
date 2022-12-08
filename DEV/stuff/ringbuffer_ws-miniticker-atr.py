@@ -4,11 +4,21 @@
 import time
 import logging
 from binance.lib.utils import config_logging
-from binance.websocket.futures.websocket_client import FuturesWebsocketClient as Client
+
 
 config_logging(logging, logging.DEBUG)
-from binance.websocket.futures.websocket_client import FuturesWebsocketClient
+
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import time
+import logging
+from binance.lib.utils import config_logging
+from binance.websocket.um_futures.websocket_client import UMFuturesWebsocketClient as FuturesWebsocketClient
+import pandas_ta as ta
+
+
+
 
 class RingBuffer(FuturesWebsocketClient):
     def __init__(self, size, data=None):

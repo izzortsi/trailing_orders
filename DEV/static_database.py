@@ -283,11 +283,15 @@ class StaticDatabase:
 
 
 if __name__ == "__main__":
+    
     sdb = StaticDatabase(futures_client, PAIR, TIMEFRAME, FROM_DATE, TO_DATE)
     sdb.get_historical_klines()
     sdb.make_features_and_labels()
     (f1, a1), (f2, a2), (f3, axs) = sdb.plot_data()
-
+    f1.show()
+    f2.show()
+    f3.show()
+    
 
 
 #%%
