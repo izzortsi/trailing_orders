@@ -27,6 +27,8 @@ class RingBuffer(FuturesWebsocketClient):
                 for item in message:
                     if item["e"] == "24hrTicker":
                         sym = item["s"]
+                        # print(sym)
+                        # print("USDT" == sym[-4:])
                         if sym in self.df.keys():
                             new_row = pd.DataFrame([   
                                         {
@@ -54,17 +56,18 @@ class RingBuffer(FuturesWebsocketClient):
                                 )
                                 # print(len(self.df[sym]))                                
                         else:
-                            self.df[sym] = pd.DataFrame([   
-                                        {
-                                        "s": item["s"],
-                                        "date": pd.to_datetime(item["E"], unit="ms"),
-                                        "o": pd.to_numeric(item["o"]),
-                                        "h": pd.to_numeric(item["h"]),
-                                        "l": pd.to_numeric(item["l"]),
-                                        "c": pd.to_numeric(item["c"]),
-                                        "v": pd.to_numeric(item["v"]),
-                                        },
-                                        ]) 
+                            if ("USDT" == sym[-4:]):
+                                self.df[sym] = pd.DataFrame([   
+                                            {
+                                            "s": item["s"],
+                                            "date": pd.to_datetime(item["E"], unit="ms"),
+                                            "o": pd.to_numeric(item["o"]),
+                                            "h": pd.to_numeric(item["h"]),
+                                            "l": pd.to_numeric(item["l"]),
+                                            "c": pd.to_numeric(item["c"]),
+                                            "v": pd.to_numeric(item["v"]),
+                                            },
+                                            ]) 
         except Exception as e:
             print(e)
         # finally:
@@ -81,7 +84,12 @@ b.ticker(
 # %%
 
 btc_df = b.df["BTCUSDT"]
-len(b.df["BTCUSDT"])
+len(b.df), len(b.df["BTCUSDT"])
 
-# b.stop()
+# %%
+print(b.df.keys())
+
+# %%
+
+b.stop()
 #%%
