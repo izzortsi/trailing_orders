@@ -20,7 +20,10 @@ class RingBuffer(FuturesWebsocketClient):
             self.data = None
         else:
             self.data = data
-        self.market_summary = {}            
+        self.market_summary = {}
+        self.market_summary["total_pchange"] = []
+        self.market_summary["total_pdiff"] = []
+        self.market_summary["total_pvar"] = []
         
         self.total_pchange = 0
         self.total_pdiff = 0
@@ -49,11 +52,11 @@ class RingBuffer(FuturesWebsocketClient):
                     self.df[sym]["sma"] = self.df[sym]["c"].rolling(7).mean()
                     self.df[sym]["ema"] = self.df[sym]["c"].ewm(span=7, adjust=False).mean()
                     self.df[sym]["std"] = self.df[sym]["c"].ewm(span=7, adjust=False).stdev()
-                    self.df[sym]["pvar"] = self.df[sym]["std"]/self.df[sym]["ema"] 
+                    # self.df[sym]["pvar"] = self.df[sym]["std"]/self.df[sym]["ema"] 
 
-                    self.market_summary["total_pchange"] = self.df[sym]["percentual_change"]
-                    self.market_summary["total_pdiff"] = self.df[sym]["pdiff"]
-                    self.market_summary["total_pvar"] = self.df[sym]["pvar"]
+                    # self.market_summary["total_pchange"] = self.df[sym]["percentual_change"]
+                    # self.market_summary["total_pdiff"] = self.df[sym]["pdiff"]
+                    # self.market_summary["total_pvar"] = self.df[sym]["pvar"]
 
                 else:
                     self.df[sym]["pdiff"] = self.df[sym]["percentual_change"].diff(1)                   
@@ -63,14 +66,21 @@ class RingBuffer(FuturesWebsocketClient):
                     self.df[sym]["sma"] = self.df[sym]["c"].rolling(7).mean()
                     self.df[sym]["ema"] = self.df[sym]["c"].ewm(span=7, adjust=False).mean()
                     self.df[sym]["std"] = self.df[sym]["c"].ewm(span=7, adjust=False).stdev()
-                    self.df[sym]["pvar"] = self.df[sym]["std"]/self.df[sym]["ema"] 
-                    self.market_summary["total_pchange"] += self.df[sym]["percentual_change"]
-                    self.market_summary["total_pdiff"] += self.df[sym]["pdiff"]
-                    self.market_summary["total_pvar"] += self.df[sym]["pvar"]
+                    # self.df[sym]["pvar"] = self.df[sym]["std"]/self.df[sym]["ema"] 
+                    # self.market_summary["total_pchange"] += self.df[sym]["percentual_change"]
+                    # self.market_summary["total_pdiff"] += self.df[sym]["pdiff"]
+                    # self.market_summary["total_pvar"] += self.df[sym]["pvar"]
 
             except Exception as e:
                 pass
                 # print("exception: ", e)
+            self.total_pchange += self.df[sym]["percentual_change"].mean()
+            self.total_pdiff += self.df[sym]["pdiff"].mean()
+            self.total_pvar += 0 #self.df[sym]["pvar"].mean()
+        self.total_pchange/=self.n_syms
+        self.total_pdiff/=self.n_syms
+        self.total_pvar/=self.n_syms
+
 
     def message_handler(self, message):
         try:
