@@ -20,31 +20,57 @@ class RingBuffer(FuturesWebsocketClient):
             self.data = None
         else:
             self.data = data
+        self.market_summary = {}            
+        
+        self.total_pchange = 0
+        self.total_pdiff = 0
+        self.total_pvar = 0
+        self.n_syms = 0
         
     def compute_indicators(self):
         
+        # total_pchange = 0
+        # total_pdiff = 0
+        # total_pvar = 0
+        # n_syms = 0
+
         for sym in self.df.keys():      
+            self.n_syms += 1
+            # print(sym)
             try:
                 if self.data is None:
                     self.data = {sym: pd.DataFrame() for sym in self.df.keys()}
                 elif sym not in self.data.keys():
                     self.data[sym] = pd.DataFrame() 
-                    self.data[sym]["pdiff"] = self.df[sym]["percentual_change"].diff(1)                   
-                    self.data[sym]["diff_1"] = self.df[sym]["c"].diff(1)
+                    self.df[sym]["pdiff"] = self.df[sym]["percentual_change"].diff(1)                   
+                    self.df[sym]["diff_1"] = self.df[sym]["c"].diff(1)
                     # self.data[sym]["diff_2"] = self.df[sym]["c"].diff(1) - self.df["c"].diff(2)
-                    self.data[sym]["diff_2"] = self.df[sym]["diff_1"].diff(1)
-                    self.data[sym]["sma"] = self.df[sym]["c"].rolling(7).mean()
-                    self.data[sym]["ema"] = self.df[sym]["c"].ewm(span=7, adjust=False).mean()
+                    self.df[sym]["diff_2"] = self.df[sym]["diff_1"].diff(1)
+                    self.df[sym]["sma"] = self.df[sym]["c"].rolling(7).mean()
+                    self.df[sym]["ema"] = self.df[sym]["c"].ewm(span=7, adjust=False).mean()
+                    self.df[sym]["std"] = self.df[sym]["c"].ewm(span=7, adjust=False).stdev()
+                    self.df[sym]["pvar"] = self.df[sym]["std"]/self.df[sym]["ema"] 
+
+                    self.market_summary["total_pchange"] = self.df[sym]["percentual_change"]
+                    self.market_summary["total_pdiff"] = self.df[sym]["pdiff"]
+                    self.market_summary["total_pvar"] = self.df[sym]["pvar"]
 
                 else:
-                    self.data[sym]["pdiff"] = self.df[sym]["percentual_change"].diff(1)                   
-                    self.data[sym]["diff_1"] = self.df[sym]["c"].diff(1)
+                    self.df[sym]["pdiff"] = self.df[sym]["percentual_change"].diff(1)                   
+                    self.df[sym]["diff_1"] = self.df[sym]["c"].diff(1)
                     # self.data[sym]["diff_2"] = self.df[sym]["c"].diff(1) - self.df["c"].diff(2)
-                    self.data[sym]["diff_2"] = self.df[sym]["diff_1"].diff(1)
-                    self.data[sym]["sma"] = self.df[sym]["c"].rolling(7).mean()
-                    self.data[sym]["ema"] = self.df[sym]["c"].ewm(span=7, adjust=False).mean()
-            except:
+                    self.df[sym]["diff_2"] = self.df[sym]["diff_1"].diff(1)
+                    self.df[sym]["sma"] = self.df[sym]["c"].rolling(7).mean()
+                    self.df[sym]["ema"] = self.df[sym]["c"].ewm(span=7, adjust=False).mean()
+                    self.df[sym]["std"] = self.df[sym]["c"].ewm(span=7, adjust=False).stdev()
+                    self.df[sym]["pvar"] = self.df[sym]["std"]/self.df[sym]["ema"] 
+                    self.market_summary["total_pchange"] += self.df[sym]["percentual_change"]
+                    self.market_summary["total_pdiff"] += self.df[sym]["pdiff"]
+                    self.market_summary["total_pvar"] += self.df[sym]["pvar"]
+
+            except Exception as e:
                 pass
+                # print("exception: ", e)
 
     def message_handler(self, message):
         try:
@@ -102,7 +128,7 @@ class RingBuffer(FuturesWebsocketClient):
         # finally:
         #     print(self.data)
 
-b = RingBuffer(100)
+b = RingBuffer(1000)
 b.start()
 b.ticker(
     id=1,
