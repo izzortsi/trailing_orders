@@ -39,6 +39,7 @@ class RingBuffer(FuturesWebsocketClient):
                                         "l": pd.to_numeric(item["l"]),
                                         "c": pd.to_numeric(item["c"]),
                                         "v": pd.to_numeric(item["v"]),
+                                        "percentual_change": pd.to_numeric(item["P"])
                                         }])                                
                             if len(self.df[sym]) < self.size:
                              
@@ -66,6 +67,7 @@ class RingBuffer(FuturesWebsocketClient):
                                             "l": pd.to_numeric(item["l"]),
                                             "c": pd.to_numeric(item["c"]),
                                             "v": pd.to_numeric(item["v"]),
+                                            "percentual_change": pd.to_numeric(item["P"])
                                             },
                                             ]) 
         except Exception as e:

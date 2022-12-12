@@ -28,17 +28,21 @@ class RingBuffer(FuturesWebsocketClient):
                 if self.data is None:
                     self.data = {sym: pd.DataFrame() for sym in self.df.keys()}
                 elif sym not in self.data.keys():
-                    self.data[sym] = pd.DataFrame()                    
+                    self.data[sym] = pd.DataFrame() 
+                    self.data[sym]["pdiff"] = self.df[sym]["percentual_change"].diff(1)                   
                     self.data[sym]["diff_1"] = self.df[sym]["c"].diff(1)
-                    self.data[sym]["diff_2"] = self.df[sym]["c"].diff(1) - self.df["c"].diff(2)
-                    self.data[sym]["sma"] = self.df[sym]["c"].rolling(5).mean()
-                    self.data[sym]["ema"] = self.df[sym]["c"].ewm(span=5, adjust=False).mean()
+                    # self.data[sym]["diff_2"] = self.df[sym]["c"].diff(1) - self.df["c"].diff(2)
+                    self.data[sym]["diff_2"] = self.df[sym]["diff_1"].diff(1)
+                    self.data[sym]["sma"] = self.df[sym]["c"].rolling(7).mean()
+                    self.data[sym]["ema"] = self.df[sym]["c"].ewm(span=7, adjust=False).mean()
 
                 else:
+                    self.data[sym]["pdiff"] = self.df[sym]["percentual_change"].diff(1)                   
                     self.data[sym]["diff_1"] = self.df[sym]["c"].diff(1)
-                    self.data[sym]["diff_2"] = self.df[sym]["c"].diff(1) - self.df["c"].diff(2)
-                    self.data[sym]["sma"] = self.df[sym]["c"].rolling(5).mean()
-                    self.data[sym]["ema"] = self.df[sym]["c"].ewm(span=5, adjust=False).mean()
+                    # self.data[sym]["diff_2"] = self.df[sym]["c"].diff(1) - self.df["c"].diff(2)
+                    self.data[sym]["diff_2"] = self.df[sym]["diff_1"].diff(1)
+                    self.data[sym]["sma"] = self.df[sym]["c"].rolling(7).mean()
+                    self.data[sym]["ema"] = self.df[sym]["c"].ewm(span=7, adjust=False).mean()
             except:
                 pass
 
@@ -60,6 +64,7 @@ class RingBuffer(FuturesWebsocketClient):
                                         "l": pd.to_numeric(item["l"]),
                                         "c": pd.to_numeric(item["c"]),
                                         "v": pd.to_numeric(item["v"]),
+                                        "percentual_change": pd.to_numeric(item["P"])
                                         }])                                
                             if len(self.df[sym]) < self.size:
                              
@@ -89,6 +94,7 @@ class RingBuffer(FuturesWebsocketClient):
                                             "l": pd.to_numeric(item["l"]),
                                             "c": pd.to_numeric(item["c"]),
                                             "v": pd.to_numeric(item["v"]),
+                                            "percentual_change": pd.to_numeric(item["P"])
                                             },
                                             ]) 
         except Exception as e:
