@@ -1,4 +1,3 @@
-
 # %%
 import numpy as np
 import pandas as pd
@@ -21,6 +20,7 @@ def process_market_data(data):
     global mcap_btc
     sd = {}
     derived_sd = {}
+    sparklines = {}
     rows = []
     for symbol in data:
         s = symbol["symbol"]
@@ -39,11 +39,12 @@ def process_market_data(data):
         df = pd.DataFrame([[s, mcap, price, vol, 100*mcap/mcap_btc, 100*vol /mcap, mcap_change, price_change, high_24, low_24, 
         (price-low_24)/(high_24-low_24), 100*(high_24/low_24 - 1), 100*(high_24-low_24)/price]], columns=["symbol", "mcap", "price", "vol", "mcap_to_btc", "vol_mcap", "mcap_change", "price_change", "high_24", "low_24", "price_pos", "absolute_volatility", "relative_volatility"])
         rows.append(df)
-
-    return sd, derived_sd, rows
+        sparklines[s] = pd.Series(symbol["sparkline_in_7d"]["price"])
+    sparklines = pd.DataFrame.from_dict(sparklines)
+    return sd, derived_sd, rows, sparklines
 
 # %%
-sd, derived_sd, rows = process_market_data(markets)
+sd, derived_sd, rows, sparklines = process_market_data(markets)
 
 names = np.array(list(sd.keys()))
 sdarray = np.array(list(sd.values()))
@@ -120,3 +121,9 @@ cg.get_coin_ticker_by_id(s)
 #util
 cg.get_coin_market_chart_by_id(s, "usd", days=7)
 # %%
+markets[0]['sparkline_in_7d']['price'] #btc 7d sparkline
+
+def plot_sparklines(markets):
+    sparklines_dict = {}
+    for sym in markets:
+
