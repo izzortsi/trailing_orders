@@ -1,6 +1,7 @@
 # %%
 
 import time
+import json
 import logging
 import pandas_ta as ta
 from binance.lib.utils import config_logging
@@ -10,11 +11,17 @@ config_logging(logging, logging.DEBUG)
 
 import pandas as pd
 
+def get_filters():
+    with open("symbols_filters.json") as f:
+        data = json.load(f)
+    return data
+
+SYMBOLS = get_filters()
 class DataBuffer(FuturesWebsocketClient):
     def __init__(self, size):
         super().__init__()
 
-        self.df = {}
+        self.df = {sym: [] for sym in SYMBOLS.keys()}
         self.size = size
 
     def message_handler(self, message):
@@ -25,56 +32,31 @@ class DataBuffer(FuturesWebsocketClient):
                         sym = item["s"]
                         # print(sym)
                         # print("USDT" == sym[-4:])
-                        print(item["e"])
-                        if sym in self.df.keys():
-                            new_row = pd.DataFrame([   
-                                        {
-                                        "s": item["s"],
-                                        "date": pd.to_datetime(item["E"], unit="ms"),
-                                        "o": pd.to_numeric(item["o"]),
-                                        "h": pd.to_numeric(item["h"]),
-                                        "l": pd.to_numeric(item["l"]),
-                                        "c": pd.to_numeric(item["c"]),
-                                        "v": pd.to_numeric(item["v"]),
-                                        "percentual_change": pd.to_numeric(item["P"])
-                                        }])                                
+                        del item["e"]
+                        del item["s"]
+                        if sym in self.df.keys():                           
                             if len(self.df[sym]) < self.size:
-                             
-                                self.df[sym] = pd.concat([
-                                        self.df[sym], 
-                                        new_row], 
-                                        ignore_index = True,
-                                        )
-                                self.compute_indicators()
+                                self.df[sym].append(item)
+
                             elif len(self.df[sym]) >= self.size:
-                                self.df[sym].drop(axis=0, index = 0, inplace=True)                                                                
-                                self.df[sym] = pd.concat([
-                                        self.df[sym], 
-                                        new_row], 
-                                        ignore_index = True,
-                                )
-                                self.compute_indicators()
-                                # print(len(self.df[sym]))                                
+                                
+                                json_object = json.dumps(self.df[sym], indent=4)
+                                from_ts = self.df[sym][0]["E"]
+                                to_ts = self.df[sym][-1]["E"]
+
+                                with open(f"{sym}_{from_ts}_{to_ts}.json", "w") as outfile:
+                                    outfile.write(json_object)
+                            
+                                self.df = {sym: [] for sym in SYMBOLS.keys()}
                         else:
                             if ("USDT" == sym[-4:]):
-                                self.df[sym] = pd.DataFrame([   
-                                            {
-                                            "s": item["s"],
-                                            "date": pd.to_datetime(item["E"], unit="ms"),
-                                            "o": pd.to_numeric(item["o"]),
-                                            "h": pd.to_numeric(item["h"]),
-                                            "l": pd.to_numeric(item["l"]),
-                                            "c": pd.to_numeric(item["c"]),
-                                            "v": pd.to_numeric(item["v"]),
-                                            "percentual_change": pd.to_numeric(item["P"])
-                                            },
-                                            ]) 
+                                self.df[sym].append(item) 
         except Exception as e:
             print(e)
         # finally:
         #     print(self.data)
 
-b = DataBuffer(1000)
+b = DataBuffer(10)
 b.start()
 b.ticker(
     id=1,
