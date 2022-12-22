@@ -4,3 +4,4 @@ __pycache__
 .env
 .history
 /DEV/datasets/*
+/gather_data/gathered_data/*

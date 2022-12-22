@@ -48,7 +48,7 @@ class DataBuffer(FuturesWebsocketClient):
                         # print("USDT" == sym[-4:])
                         del item["e"]
                         del item["s"]
-                        item["date"] = str(pd.to_datetime(item["E"], unit="ms"))
+                        # item["date"] = str(pd.to_datetime(item["E"], unit="ms"))
                         # print(item["date"])
                         if sym in self.df.keys():                           
                             if len(self.df[sym]) < self.size:
@@ -84,20 +84,3 @@ b.ticker(
     id=1,
     callback=b.message_handler,
 )
-
-
-# %%
-
-btc_df = b.df["BTCUSDT"]
-len(b.df), len(b.df["BTCUSDT"])
-
-# %%
-print(b.df.keys())
-#%%
-
-
-# %%
-
-b.stop()
-#%%
-
