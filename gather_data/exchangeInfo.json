@@ -1,6 +1,6 @@
 {
     "timezone": "UTC",
-    "serverTime": 1670954411481,
+    "serverTime": 1671724809565,
     "futuresType": "U_MARGINED",
     "rateLimits": [
         {
@@ -1263,7 +1263,7 @@
             ],
             "settlePlan": 0,
             "triggerProtect": "0.0500",
-            "liquidationFee": "0.010000",
+            "liquidationFee": "0.015000",
             "marketTakeBound": "0.05",
             "filters": [
                 {
@@ -2908,7 +2908,7 @@
                     "minPrice": "0.3420",
                     "maxPrice": "2249",
                     "filterType": "PRICE_FILTER",
-                    "tickSize": "0.0010"
+                    "tickSize": "0.0001"
                 },
                 {
                     "stepSize": "0.1",
@@ -4479,7 +4479,7 @@
                 {
                     "stepSize": "1",
                     "filterType": "MARKET_LOT_SIZE",
-                    "maxQty": "10000",
+                    "maxQty": "2000",
                     "minQty": "1"
                 },
                 {
@@ -7971,7 +7971,7 @@
             ],
             "settlePlan": 0,
             "triggerProtect": "0.1000",
-            "liquidationFee": "0.010000",
+            "liquidationFee": "0.025000",
             "marketTakeBound": "0.10",
             "filters": [
                 {
@@ -7989,7 +7989,7 @@
                 {
                     "stepSize": "1",
                     "filterType": "MARKET_LOT_SIZE",
-                    "maxQty": "50000",
+                    "maxQty": "300000",
                     "minQty": "1"
                 },
                 {
@@ -8829,7 +8829,7 @@
             ],
             "settlePlan": 0,
             "triggerProtect": "0.0500",
-            "liquidationFee": "0.010000",
+            "liquidationFee": "0.015000",
             "marketTakeBound": "0.05",
             "filters": [
                 {
@@ -12243,9 +12243,9 @@
             "symbol": "ANCBUSD",
             "pair": "ANCBUSD",
             "contractType": "PERPETUAL",
-            "deliveryDate": 4133404800000,
+            "deliveryDate": 1671094800000,
             "onboardDate": 1653375600000,
-            "status": "TRADING",
+            "status": "SETTLING",
             "maintMarginPercent": "2.5000",
             "requiredMarginPercent": "5.0000",
             "baseAsset": "ANC",
@@ -12970,7 +12970,7 @@
                     "minPrice": "0.0010000",
                     "maxPrice": "100000",
                     "filterType": "PRICE_FILTER",
-                    "tickSize": "0.0010000"
+                    "tickSize": "0.0001000"
                 },
                 {
                     "stepSize": "0.1",
@@ -13599,13 +13599,13 @@
                 {
                     "stepSize": "1",
                     "filterType": "LOT_SIZE",
-                    "maxQty": "20000000",
+                    "maxQty": "80000000",
                     "minQty": "1"
                 },
                 {
                     "stepSize": "1",
                     "filterType": "MARKET_LOT_SIZE",
-                    "maxQty": "1000000",
+                    "maxQty": "10000000",
                     "minQty": "1"
                 },
                 {
@@ -13881,9 +13881,9 @@
             "symbol": "AUCTIONBUSD",
             "pair": "AUCTIONBUSD",
             "contractType": "PERPETUAL",
-            "deliveryDate": 4133404800000,
+            "deliveryDate": 1671094800000,
             "onboardDate": 1659596400000,
-            "status": "TRADING",
+            "status": "SETTLING",
             "maintMarginPercent": "2.5000",
             "requiredMarginPercent": "5.0000",
             "baseAsset": "AUCTION",

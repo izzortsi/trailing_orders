@@ -31,8 +31,7 @@ data["symbols"][0]["filters"][0]
 
 for symbol_data in data["symbols"]:
     if symbol_data["contractType"] == "PERPETUAL" and (
-        symbol_data["quoteAsset"] == "USDT" or symbol_data["quoteAsset"] == "BUSD"
-    ):
+        symbol_data["quoteAsset"] == "USDT"): #or symbol_data["quoteAsset"] == "BUSD"):
 
         symbol = symbol_data["symbol"]
         symbols_dict[symbol] = symbol_data

@@ -254,7 +254,7 @@
     "WAVESUSDT": {
         "pricePrecision": 4,
         "quantityPrecision": 1,
-        "tickSize": "0.0010",
+        "tickSize": "0.0001",
         "stepSize": "0.1",
         "minQty": "0.1"
     },
@@ -545,13 +545,6 @@
         "stepSize": "1",
         "minQty": "1"
     },
-    "BTCBUSD": {
-        "pricePrecision": 1,
-        "quantityPrecision": 3,
-        "tickSize": "0.1",
-        "stepSize": "0.001",
-        "minQty": "0.001"
-    },
     "CHZUSDT": {
         "pricePrecision": 5,
         "quantityPrecision": 0,
@@ -755,13 +748,6 @@
         "stepSize": "0.1",
         "minQty": "0.1"
     },
-    "ETHBUSD": {
-        "pricePrecision": 2,
-        "quantityPrecision": 3,
-        "tickSize": "0.01",
-        "stepSize": "0.001",
-        "minQty": "0.001"
-    },
     "BTCDOMUSDT": {
         "pricePrecision": 1,
         "quantityPrecision": 3,
@@ -776,38 +762,10 @@
         "stepSize": "1",
         "minQty": "1"
     },
-    "BNBBUSD": {
-        "pricePrecision": 3,
-        "quantityPrecision": 2,
-        "tickSize": "0.010",
-        "stepSize": "0.01",
-        "minQty": "0.01"
-    },
-    "ADABUSD": {
-        "pricePrecision": 5,
-        "quantityPrecision": 0,
-        "tickSize": "0.00010",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "XRPBUSD": {
-        "pricePrecision": 4,
-        "quantityPrecision": 1,
-        "tickSize": "0.0001",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
     "IOTXUSDT": {
         "pricePrecision": 5,
         "quantityPrecision": 0,
         "tickSize": "0.00001",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "DOGEBUSD": {
-        "pricePrecision": 6,
-        "quantityPrecision": 0,
-        "tickSize": "0.000010",
         "stepSize": "1",
         "minQty": "1"
     },
@@ -845,20 +803,6 @@
         "tickSize": "0.0001",
         "stepSize": "1",
         "minQty": "1"
-    },
-    "SOLBUSD": {
-        "pricePrecision": 4,
-        "quantityPrecision": 0,
-        "tickSize": "0.0010",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "FTTBUSD": {
-        "pricePrecision": 3,
-        "quantityPrecision": 1,
-        "tickSize": "0.001",
-        "stepSize": "0.1",
-        "minQty": "0.1"
     },
     "DYDXUSDT": {
         "pricePrecision": 3,
@@ -1035,206 +979,10 @@
         "stepSize": "1",
         "minQty": "1"
     },
-    "AVAXBUSD": {
-        "pricePrecision": 6,
-        "quantityPrecision": 1,
-        "tickSize": "0.001000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "NEARBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "GMTBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0001000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "APEBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "GALBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0010000",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "FTMBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0001000",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "DODOBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0001000",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "ANCBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0000100",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "GALABUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0000010",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "TRXBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0000010",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "1000LUNCBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0001000",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "LUNA2BUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0001000",
-        "stepSize": "1",
-        "minQty": "1"
-    },
     "OPUSDT": {
         "pricePrecision": 7,
         "quantityPrecision": 1,
         "tickSize": "0.0001000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "DOTBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "TLMBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0000100",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "ICPBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "WAVESBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "LINKBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "SANDBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0001000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "LTCBUSD": {
-        "pricePrecision": 6,
-        "quantityPrecision": 2,
-        "tickSize": "0.010000",
-        "stepSize": "0.01",
-        "minQty": "0.01"
-    },
-    "MATICBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0001000",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "CVXBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "FILBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "1000SHIBBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0000010",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "LEVERBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0000001",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "ETCBUSD": {
-        "pricePrecision": 6,
-        "quantityPrecision": 1,
-        "tickSize": "0.001000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "LDOBUSD": {
-        "pricePrecision": 6,
-        "quantityPrecision": 1,
-        "tickSize": "0.000100",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "UNIBUSD": {
-        "pricePrecision": 6,
-        "quantityPrecision": 1,
-        "tickSize": "0.001000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "AUCTIONBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 1,
-        "tickSize": "0.0010000",
         "stepSize": "0.1",
         "minQty": "0.1"
     },
@@ -1280,20 +1028,6 @@
         "stepSize": "1",
         "minQty": "1"
     },
-    "AMBBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0000010",
-        "stepSize": "1",
-        "minQty": "1"
-    },
-    "PHBBUSD": {
-        "pricePrecision": 7,
-        "quantityPrecision": 0,
-        "tickSize": "0.0001000",
-        "stepSize": "1",
-        "minQty": "1"
-    },
     "LDOUSDT": {
         "pricePrecision": 6,
         "quantityPrecision": 0,
@@ -1326,13 +1060,6 @@
         "pricePrecision": 6,
         "quantityPrecision": 1,
         "tickSize": "0.010000",
-        "stepSize": "0.1",
-        "minQty": "0.1"
-    },
-    "APTBUSD": {
-        "pricePrecision": 5,
-        "quantityPrecision": 1,
-        "tickSize": "0.00010",
         "stepSize": "0.1",
         "minQty": "0.1"
     },
