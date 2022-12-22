@@ -2,6 +2,7 @@
 
 import time
 import os
+import sys
 import certifi
 import win32api
 import json
@@ -78,9 +79,13 @@ class DataBuffer(FuturesWebsocketClient):
         # finally:
         #     print(self.data)
 
-b = DataBuffer(50)
-b.start()
-b.ticker(
-    id=1,
-    callback=b.message_handler,
-)
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        size = int(sys.argv[1])
+        b = DataBuffer(size)
+        b.start()
+        b.ticker(id=1, callback=b.message_handler)
+    else:            
+        b = DataBuffer(500)
+        b.start()
+        b.ticker(id=1, callback=b.message_handler)
