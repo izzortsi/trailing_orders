@@ -1,11 +1,10 @@
 # %%
 from order_grid import *
 from plot_functions import *
-from ring_buffer import RingBuffer
+# from ring_buffer import RingBuffer
 from change_leverage_and_margin_type import change_leverage_and_margin
 # from order_grid_arithmetic import send_arithmetic_order_grid
-from binance.client import Client
-from binance.enums import *
+from binance.um_futures import UMFutures as Client
 from threading import Thread, local
 from datetime import datetime
 
@@ -25,16 +24,17 @@ runs = 0
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-pt", "--paper_trade", type=bool, default=True)
-parser.add_argument("-tf", "--timeframe", type=str, default="1h")
+parser.add_argument("-tf", "--timeframe", type=str, default="15m")
 parser.add_argument("-ppl", "--price_posision_low", type=float, default=0.0)
 parser.add_argument("-pph", "--price_position_high", type=float, default=1.0)
 
 parser.add_argument("-wl", "--window_length", type=int, default=52)
-parser.add_argument("-wa", "--atr_window_length", type=int, default=8)
+parser.add_argument("-wa", "--atr_window_length", type=int, default=7)
 parser.add_argument("-e", nargs="+", help="my help message", type=float,
+                        default= (1.5, 1.618))
                         # default= (1.16, 1.28, 1.4, 1.52, 1.64, 1.76, 1.88, 2.0, 2.12, 2.24, 2.36, 2.48)) # 15m (maybe 5min)
                         # default= (1.16, 1.28, 1.4, 1.52, 1.64, 1.76, 1.88, 2.0, 2.12)) # 15m (maybe 5min)
-                        default= (1.52, 1.64, 1.76, 1.88, 2.0, 2.12)) # 15m (maybe 5min)
+                        # default= (1.52, 1.64, 1.76, 1.88, 2.0, 2.12)) # 15m (maybe 5min)
                         # default=(1.0, 1.146, 1.364, 1.5, 1.618, 1.854, 2.0, 2.146, 2.364)) #1h
                         # default=(1.0, 1.146, 1.364, 1.5, 1.618, 1.854, 2.0, 2.364, 2.5, 2.618)) #15min
                         # default=(0.92, 1.16, 1.4, 1.64, 1.88, 2.12, 2.36, 2.6, 2.84)) # 15m (maybe 5min)
@@ -63,7 +63,7 @@ args = parser.parse_args()
 
 api_key = os.environ.get("API_KEY")
 api_secret = os.environ.get("API_SECRET")
-client = Client(api_key, api_secret)
+client = Client(key = api_key, secret = api_secret)
 
 
 interval = args.timeframe
@@ -138,7 +138,7 @@ def process_futures_klines(klines):
 
 
 
-def compute_indicators(klines, coefs=np.array([1.0, 1.364, 1.618, 1.854, 2.0, 2.364, 2.618]), w1=12, w2=26, w3=8, w_atr=8, step=0.0):
+def compute_indicators(klines, coefs=np.array([1.0, 1.364, 1.618, 1.854, 2.0, 2.364, 2.618]), w1=12, w2=26, w3=8, w_atr=7, step=0.0):
     # compute macd
     macd = pd.Series(
         klines["close"].ewm(span=w1, min_periods=w1).mean()
@@ -417,7 +417,7 @@ def generate_market_signals(symbols, coefs, interval, limit=99, paper=False, pos
     return signals, df, data, positions, cpnl, shown_data, order_grids
 
 def prescreen():
-    all_stats = client.futures_ticker()
+    all_stats = client.ticker_24hr_price_change()
     perps = process_all_stats(all_stats)
     filtered_perps = filter_perps(perps, price_position_range=price_position_range)
     filtered_perps = pd.concat(filtered_perps, axis=0)
@@ -505,7 +505,7 @@ def check_positions(client, spairs, positions, order_grids):
         
             try:
                 client.futures_cancel_all_open_orders(symbol=symbol)
-            except BinanceAPIException as e:
+            except Exception as e:
                 print(e)
             else:                
                 spairs.remove(symbol)
@@ -518,7 +518,7 @@ def check_positions(client, spairs, positions, order_grids):
             print(f"changed tp and sl for {symbol}'s position")
             try:
                 tp_id = symbol_grid["tp"]["orderId"]
-            except BinanceAPIException as e:
+            except Exception as e:
                 logger.info(
                     f"{symbol}: {e} at line 517"
                 )
@@ -526,7 +526,7 @@ def check_positions(client, spairs, positions, order_grids):
             try:
                 client.futures_cancel_order(symbol=symbol, orderId=tp_id)
                 # client.futures_cancel_order(symbol=symbol, orderId=sl_id)
-            except BinanceAPIException as e:
+            except Exception as e:
                 logger.info(
                     f"{symbol}: {e} at line 524"
                 )
@@ -540,7 +540,7 @@ def check_positions(client, spairs, positions, order_grids):
                 # new_tp, new_sl = send_tpsl(client, symbol, tp, sl, side, protect=False)
                 try:
                     symbol_grid["tp"]["orderId"] = new_tp["orderId"]
-                except BinanceAPIException as e:
+                except Exception as e:
                             logger.info(
                         f"{symbol}: {e} at line 539"
                     )

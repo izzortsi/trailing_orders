@@ -47,6 +47,7 @@ POSITION_DIRECTION = args.position_direction
 PLOT_STUFF = args.plot_stuff
 SEND_ORDERS = args.send_orders
 LEVERAGE = 10
+COEFS = np.array([0.618, 1.0, 1.618])
 
 if POSITION_DIRECTION == "LONG":
     SIDE = "SELL" 
@@ -120,7 +121,7 @@ def process_klines(klines):
     df.drop(['ignore'], axis=1, inplace=True)
     return df
 
-def compute_indicators(klines, coefs=np.array([1.5, 1.618]), w1=12, w2=26, w3=8, w_atr=7, step=0.0):
+def compute_indicators(klines, coefs=COEFS, w1=12, w2=26, w3=8, w_atr=7, step=0.0):
     # compute macd
     macd = pd.Series(
         klines["close"].ewm(span=w1, min_periods=w1).mean()
@@ -288,7 +289,7 @@ if __name__ == "__main__":
     if SEND_ORDERS:
         try:
             response = response = futures_client.new_order(symbol=PAIR, side = SIDE, type= "TRAILING_STOP_MARKET", quantity= formatted_quantity, reduceOnly = True, timeInForce="GTC", activationPrice= formatted_actv_price, callbackRate=callback_rate)
-            # logging.info(response)
+            logging.info(response)
         except ClientError as error:
             logging.error(
                 "Found error. status: {}, error code: {}, error message: {}".format(

@@ -2,9 +2,10 @@
 # %%
 
 import json
-from binance.client import Client
-from binance.enums import *
-from binance.exceptions import BinanceAPIException
+from binance.um_futures import UMFutures as Client
+# from binance.client import Client
+# from binance.enums import *
+# from binance.exceptions import Exception
 import os
 import argparse
 
@@ -13,7 +14,7 @@ import argparse
 
 api_key = os.environ.get("API_KEY")
 api_secret = os.environ.get("API_SECRET")
-client = Client(api_key, api_secret)
+client = Client(key=api_key, secret = api_secret)
 
 def change_leverage_and_margin(leverage, margin_type):
 
@@ -26,13 +27,13 @@ def change_leverage_and_margin(leverage, margin_type):
 
         try:
             client.futures_change_leverage(symbol=symbol, leverage=leverage)
-        except BinanceAPIException as e:
+        except Exception as e:
             print(e)
         
         if margin_type != "IGNORE":
             try:
                 client.futures_change_margin_type(symbol=symbol, marginType=margin_type)
-            except BinanceAPIException as e:
+            except Exception as e:
                 print(e)
         
         positionInfo = client.futures_position_information(symbol=symbol)[0]
