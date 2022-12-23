@@ -1,6 +1,6 @@
 
 # %%
-%matplotlib qt
+# %matplotlib qt
 import matplotlib.pyplot as plt
 import numpy as np
 import time
@@ -13,15 +13,19 @@ import pandas as pd
 import pandas_ta as ta
 
 config_logging(logging, logging.DEBUG)
-
+import sys
+import certifi
+import win32api
+import os
+os.environ['SSL_CERT_FILE'] = certifi.where()
 # %%
 
 class RingBuffer(FuturesWebsocketClient):
     def __init__(self, size):
+        super().__init__()
         self.df = pd.DataFrame()
         self.size = size
         self.indicators = pd.DataFrame()
-        super().__init__()
         
 
     def message_handler(self, message):
@@ -63,19 +67,19 @@ class RingBuffer(FuturesWebsocketClient):
                             ])], 
                             ignore_index = True,
                         )
-                atr_ = ta.atr(self.df.h, self.df.l, self.df.c, length=24)                        
+                atr_ = ta.atr(self.df.h, self.df.l, self.df.c, length=7)                        
 
-                closes_ema = ta.ema(self.df.c, length=24)
+                closes_ema = ta.ema(self.df.c, length=7)
                 closes_ema.name = "ema"
 
-                sup_band = closes_ema + 0.84*atr_
+                sup_band = closes_ema + 1.618*atr_
                 sup_band.name = "sband"
 
-                inf_band = closes_ema - 0.84*atr_
+                inf_band = closes_ema - 1.618*atr_
                 inf_band.name = "iband"
 
                 self.indicators = pd.concat([inf_band, closes_ema, sup_band], axis=1)
-                print(self.df.iloc[-1], "\n", self.indicators.iloc[-1])
+                # print(self.df.iloc[-1], "\n", self.indicators.iloc[-1])
 
         except Exception as e:
             print(e)
@@ -91,16 +95,17 @@ b.continuous_kline(
 )
 
 # %%
-b.df
+len(b.indicators)
 # %%
 
 #%%
-f, ax = plt.subplots(figsize=(12, 8))
+if len(b.indicators) == b.size:
+    f, ax = plt.subplots(figsize=(12, 8))
 
-ax.plot(b.df.date, b.df.c, label="close")
-# ax.plot(b.df.date, b.indicators.ema)
-ax.plot(b.df.date, b.indicators.iband)
-ax.plot(b.df.date, b.indicators.sband)
+    ax.plot(b.df.date, b.df.c, label="close")
+    # ax.plot(b.df.date, b.indicators.ema)
+    ax.plot(b.df.date, b.indicators.iband)
+    ax.plot(b.df.date, b.indicators.sband)
 # %%
 ax.clear()
 # %%
