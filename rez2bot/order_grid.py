@@ -1,6 +1,7 @@
 # %%
 
 from binance.um_futures import UMFutures as Client
+from binance.error import ClientError
 from binance.lib.utils import config_logging
 
 from helpers import round_step_size
@@ -118,7 +119,7 @@ def send_order_grid(client, symbol, data, inf_grid, sup_grid, tp, side, coefs, q
 
         grid_orders["entry"] = new_position
             
-    except BaseException as error:
+    except ClientError as error:
         
         print("positioning, ", error)    
         if (
@@ -165,7 +166,7 @@ def send_order_grid(client, symbol, data, inf_grid, sup_grid, tp, side, coefs, q
                     # newOrderRespType="RESULT",
                 )
                 grid_orders["grid"].append(grid_order)
-            except BaseException as error:
+            except ClientError as error:
 
                 print(f"grid order {i}, ", error)
 
@@ -204,7 +205,7 @@ def send_order_grid(client, symbol, data, inf_grid, sup_grid, tp, side, coefs, q
                 timeInForce="GTC",
             )
             grid_orders["tp"] = tp_order_mkt    
-        except BaseException as error:
+        except ClientError as error:
             logger.info(
                 f"{symbol}: take profit order, {error} at line 194; {formatted_tp_price if error.code == -4006  else None}"
                 )
@@ -239,7 +240,7 @@ def send_order_grid(client, symbol, data, inf_grid, sup_grid, tp, side, coefs, q
                         timeInForce="GTC",
                     )
                     grid_orders["sl"] = sl_order_mkt    
-                except BaseException as error:
+                except ClientError as error:
                     print(f"stop loss order, ", error)
         if error_code is not None:
            return error_code, grid_orders
@@ -297,7 +298,7 @@ def send_tpsl(client, symbol, tp, sl, side, protect=False):
             priceProtect=False,
             timeInForce="GTC",
         )    
-    except BaseException as error:
+    except ClientError as error:
         print(f"take profit order, ", error)
     finally:
         if sl is not None:
@@ -320,7 +321,7 @@ def send_tpsl(client, symbol, tp, sl, side, protect=False):
                     priceProtect=False,
                     timeInForce="GTC",
                 )    
-            except BaseException as error:
+            except ClientError as error:
                 print(f"stop loss order, ", error)
             else:
                 return tp_order_mkt, sl_order_mkt

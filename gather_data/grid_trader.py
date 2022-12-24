@@ -1,7 +1,7 @@
 #%%
 from binance.um_futures import UMFutures as Client
-from binance.lib.utils import config_logging
 from binance.error import ClientError
+from binance.lib.utils import config_logging
 import pandas_ta as ta
 
 import plot_functions as pf
@@ -288,7 +288,7 @@ if __name__ == "__main__":
 
     if SEND_ORDERS:
         try:
-            response = response = futures_client.new_order(symbol=PAIR, side = SIDE, type= "TRAILING_STOP_MARKET", quantity= formatted_quantity, reduceOnly = True, timeInForce="GTC", activationPrice= formatted_actv_price, callbackRate=callback_rate)
+            response = futures_client.new_order(symbol=PAIR, side = SIDE, type= "TRAILING_STOP_MARKET", quantity= formatted_quantity, reduceOnly = True, timeInForce="GTC", activationPrice= formatted_actv_price, callbackRate=callback_rate)
             logging.info(response)
         except ClientError as error:
             logging.error(
