@@ -19,7 +19,7 @@ import os
 parser = argparse.ArgumentParser(description='Sends a trailing stop order for given parameters.')
 
 
-parser.add_argument('-s', '--symbol', type= str, help='e.g., btc', default="btc")
+parser.add_argument('-s', '--symbol', type= str, help='e.g., btc', default="gala")
 parser.add_argument('-tf', '--timeframe', type= str, help='one of: 15m, 1h, 4h, 1d', default="4h")
 parser.add_argument('-tp', '--take_profit', type= float, help='take profit, in percentage, without accounting for leverage (should be above 0.1% to cover trading fees)', default=0.5)
 parser.add_argument('-ap', '--activation_price', type= float, help='directly uses the given activation price to set the exit point', default=0.0)
@@ -27,9 +27,9 @@ parser.add_argument('-sl', '--stop_loss', type= float, help='not implemented yet
 parser.add_argument('-dwl', '--data_window_length', type= int, help='how many candles to query from binance`s API, up to 500', default=50)
 parser.add_argument('-rwl', '--rolling_window_length', type=int, help='lenght of the rolling window to compute means and standard deviations', default=4)
 parser.add_argument('-crf', '--callback_rate_factor', type=int, help='to explain', default=10)
-parser.add_argument('-d', '--position_direction', type=str, help='position direction: LONG or SHORT', default="LONG")
-parser.add_argument('-plt', '--plot_stuff', type=bool, help='plot queried data?', default=False)
-parser.add_argument('-so', '--send_orders', type=bool, help='actually send the order?', default=False)
+parser.add_argument('-d', '--position_direction', type=str, help='position direction: LONG or SHORT', default="SHORT")
+parser.add_argument('-plt', '--plot_stuff', type=bool, help='plot queried data?', default=True)
+parser.add_argument('-so', '--send_orders', type=bool, help='actually send the order?', default=True)
 
 args = parser.parse_args()
 #%%
